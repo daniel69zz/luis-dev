@@ -1,0 +1,16 @@
+# Dependencias y builds
+node_modules/
+dist/
+
+# Variables de entorno (los .env.example sí se versionan)
+.env
+.env.*
+!.env.example
+
+# Backend
+backend/uploads/
+backend/src/generated/
+
+# Varios
+*.log
+.DS_Store

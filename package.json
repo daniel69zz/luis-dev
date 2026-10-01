@@ -1,0 +1,17 @@
+{
+  "name": "luis-dev-portfolio",
+  "private": true,
+  "description": "Portafolio: backend (API REST) y frontend (SPA) independientes",
+  "scripts": {
+    "setup": "npm install && npm --prefix backend install && npm --prefix frontend install",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose stop db",
+    "dev": "concurrently -k -n api,web -c green,cyan \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "typecheck": "npm --prefix backend run typecheck && npm --prefix frontend run typecheck",
+    "sync": "npm --prefix backend run projects:sync"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
