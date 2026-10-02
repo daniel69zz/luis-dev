@@ -7,10 +7,6 @@ dist/
 .env.*
 !.env.example
 
-# Backend
-backend/uploads/
-backend/src/generated/
-
 # Varios
 *.log
 .DS_Store

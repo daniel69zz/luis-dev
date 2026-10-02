@@ -1,6 +1,6 @@
 ---
 # ── Copia esta carpeta, renómbrala (el nombre será la URL: /proyectos/<nombre>) ──
-# ── y ejecuta `npm run sync` desde la raíz del repo.                          ──
+# ── El servidor la carga solo: en desarrollo al guardar, en producción al desplegar. ──
 # Las carpetas que empiezan por "_" se ignoran, así que esta plantilla no se publica.
 
 title: Nombre del proyecto # obligatorio

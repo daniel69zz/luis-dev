@@ -1,6 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
-import { Prisma } from '../generated/prisma/client.js';
 import { HttpError } from '../utils/http-error.js';
 
 interface ErrorBody {
@@ -15,10 +14,6 @@ function toHttpError(err: unknown): HttpError {
       'Datos inválidos',
       err.issues.map((issue) => ({ path: issue.path.join('.'), message: issue.message })),
     );
-  }
-
-  if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
-    return HttpError.notFound();
   }
 
   // Body JSON mal formado (express.json)

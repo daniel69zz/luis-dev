@@ -4,10 +4,10 @@ import { projectsService } from './projects.service.js';
 
 export const projectsRouter = Router();
 
-projectsRouter.get('/', async (req, res) => {
-  res.json(await projectsService.list(listProjectsQuerySchema.parse(req.query)));
+projectsRouter.get('/', (req, res) => {
+  res.json(projectsService.list(listProjectsQuerySchema.parse(req.query)));
 });
 
-projectsRouter.get('/:slug', async (req, res) => {
-  res.json({ data: await projectsService.getBySlug(req.params.slug) });
+projectsRouter.get('/:slug', (req, res) => {
+  res.json({ data: projectsService.getBySlug(req.params.slug) });
 });

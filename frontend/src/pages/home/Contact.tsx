@@ -7,7 +7,7 @@ import { site } from '@/config/site';
 export function Contact() {
   return (
     <section id="contacto" className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
-      <SectionHeading index="04" title="contacto" />
+      <SectionHeading index="05" title="contacto" />
       <div className="mx-auto max-w-2xl rounded-xl border border-line bg-surface/60 p-8 text-center sm:p-12">
         <p className="font-mono text-sm text-muted">
           <span className="text-accent">$</span> echo "hola" | mail {site.email}

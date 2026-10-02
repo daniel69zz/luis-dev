@@ -18,13 +18,8 @@ const envSchema = z.object({
     ),
   TRUST_PROXY: z.coerce.number().int().min(0).default(0),
 
-  DATABASE_URL: z.string().min(1, 'DATABASE_URL es obligatorio'),
-
   /** Carpeta con un subdirectorio por proyecto (ver content/projects/_plantilla) */
   CONTENT_DIR: z.string().default('content/projects'),
-
-  STORAGE_DRIVER: z.enum(['local']).default('local'),
-  UPLOAD_DIR: z.string().default('uploads'),
 });
 
 const parsed = envSchema.safeParse(process.env);

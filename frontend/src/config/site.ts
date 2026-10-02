@@ -40,4 +40,20 @@ export const site = {
     { category: 'devops', items: ['Docker', 'Linux', 'Nginx', 'CI/CD', 'Git'] },
     { category: 'también', items: ['Python', 'Testing', 'Figma'] },
   ],
+
+  /** Certificaciones: `url` es el enlace público de verificación e `image` la insignia */
+  certifications: [
+    {
+      name: 'AWS Certified Cloud Practitioner',
+      issuer: 'Amazon Web Services Training and Certification',
+      url: 'https://www.credly.com/badges/abcaec50-2e6a-415c-88d4-fd052aa85c30/public_url',
+      image: 'https://images.credly.com/size/340x340/images/00634f82-b07f-4bbd-a6bb-53de397fc3a6/image.png',
+    },
+    {
+      name: 'Network Technician Career Path',
+      issuer: 'Cisco',
+      url: 'https://www.credly.com/badges/815c7103-94d1-4ba4-9dfb-80969a97e52b/public_url',
+      image: 'https://images.credly.com/size/340x340/images/978f88dc-c247-4093-9d39-6efac3651297/image.png',
+    },
+  ],
 } as const;

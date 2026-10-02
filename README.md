@@ -1,29 +1,25 @@
 # luis.dev — Portafolio
 
-Portafolio personal con estética de terminal/editor. Los proyectos se escriben como **archivos Markdown** y se cargan en la base de datos con un comando.
+Portafolio personal con estética de terminal/editor. Los proyectos se escriben como **archivos Markdown** y el backend los lee directamente: **no hay base de datos**.
 El **backend** y el **frontend** son aplicaciones independientes: cada una tiene su `package.json`, su `Dockerfile` y se despliega por separado.
 
 ```
 luis_dev/
-├── backend/              API REST de solo lectura · Node + Express 5 + Prisma 7 + PostgreSQL
+├── backend/              API REST de solo lectura · Node + Express 5, sin base de datos
 │   └── content/projects/ ← tus proyectos (un directorio por proyecto)
 ├── frontend/             SPA · React 19 + Vite + Tailwind 4 + TanStack Query
-├── docker-compose.yml    PostgreSQL para desarrollo / stack completo
+├── docker-compose.yml    stack completo en contenedores
 └── package.json          scripts para levantar todo junto
 ```
 
 ## Arranque rápido
 
-Requisitos: Node 22+ y Docker.
+Requisitos: Node 22+.
 
 ```bash
 npm run setup                 # instala dependencias de raíz, backend y frontend
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
-
-npm run db:up                 # PostgreSQL en Docker (puerto 5433)
-npm --prefix backend run db:deploy   # crea las tablas
-npm run sync                  # carga backend/content/projects en la BD
 
 npm run dev                   # API en :4000 y web en :5173
 ```
@@ -56,9 +52,10 @@ npm run dev                   # API en :4000 y web en :5173
 3. Imágenes (opcionales), en la misma carpeta:
    - `cover.png` / `cover.jpg` / `cover.webp` → portada
    - `gallery/01.png`, `gallery/02.jpg`… → galería, en orden alfabético
-4. `npm run sync`
 
-La carpeta es la **fuente de verdad**: el sync crea, actualiza y **borra** proyectos e imágenes para que la base de datos quede igual que `content/projects/`. Si algún `index.md` tiene errores, te dice cuál y no aplica ningún cambio. Las carpetas que empiezan por `_` se ignoran.
+No hay ningún paso más. Con `npm run dev` el backend recarga el contenido al guardar; en producción lo lee al arrancar, así que publicar es hacer commit y redeploy.
+
+La carpeta es la **fuente de verdad**: borrar una carpeta borra el proyecto. Si algún `index.md` tiene errores, el servidor dice cuál: al arrancar no levanta, y en desarrollo conserva lo último que cargó bien. Las carpetas que empiezan por `_` se ignoran.
 
 ## Personalizar
 
@@ -77,14 +74,10 @@ backend/src/
 ├── app.ts                middlewares globales (helmet, CORS, rate limit, estáticos)
 ├── routes.ts             monta los módulos bajo /api/v1
 ├── config/env.ts         variables de entorno validadas con Zod
-├── lib/
-│   ├── prisma.ts         cliente de base de datos
-│   └── storage/          dónde se publican las imágenes (local hoy, S3/R2 mañana)
 ├── middlewares/          errores, rate limit
-├── modules/
-│   ├── projects/         routes → service → mapper (DTO) · projects.sync.ts (content → BD)
-│   └── tags/
-└── scripts/sync-projects.ts
+└── modules/
+    ├── projects/         routes → service · projects.content.ts (lee content/ y lo deja en memoria)
+    └── tags/
 ```
 
 ### Endpoints
@@ -94,20 +87,18 @@ backend/src/
 | `GET`  | `/api/v1/projects?page&limit&search&tag&featured` |
 | `GET`  | `/api/v1/projects/:slug`                          |
 | `GET`  | `/api/v1/tags`                                    |
+| `GET`  | `/media/:slug/:archivo` (imágenes de los proyectos) |
 | `GET`  | `/health`                                         |
 
 Formato de respuesta: `{ data, meta? }` si va bien, `{ error: { message, code, details? } }` si falla.
 
 ### Scripts (`backend/`)
 
-| Script                  | Qué hace                                               |
-| ----------------------- | ------------------------------------------------------ |
-| `npm run dev`           | servidor con recarga automática                        |
-| `npm run build` / `start` | compila a `dist/` y lo ejecuta                       |
-| `npm run projects:sync` | carga `content/projects` (= `npm run sync` en la raíz) |
-| `npm run db:migrate`    | crea una migración tras cambiar `prisma/schema.prisma` |
-| `npm run db:deploy`     | aplica migraciones pendientes                          |
-| `npm run db:studio`     | explorador visual de la base de datos                  |
+| Script                    | Qué hace                                         |
+| ------------------------- | ------------------------------------------------ |
+| `npm run dev`             | servidor con recarga automática (código y contenido) |
+| `npm run build` / `start` | compila a `dist/` y lo ejecuta                   |
+| `npm run typecheck`       | comprueba los tipos                              |
 
 ## Frontend
 
@@ -125,8 +116,8 @@ frontend/src/
 
 Cada app se despliega por separado:
 
-- **Backend** (Railway, Render, Fly.io, un VPS…): usa `backend/Dockerfile`. Al arrancar aplica las migraciones, **sincroniza `content/projects`** y levanta la API, así que publicar un proyecto nuevo es hacer commit y redeploy.
-  Variables: `DATABASE_URL`, `PUBLIC_URL` (su URL pública), `CORS_ORIGINS` (la URL del frontend) y `TRUST_PROXY=1` si va detrás de un proxy.
+- **Backend** (Railway, Render, Fly.io, un VPS…): usa `backend/Dockerfile`. La imagen incluye `content/projects` y la API lo lee al arrancar, así que publicar un proyecto nuevo es hacer commit y redeploy. No necesita base de datos ni disco persistente.
+  Variables: `PUBLIC_URL` (su URL pública), `CORS_ORIGINS` (la URL del frontend) y `TRUST_PROXY=1` si va detrás de un proxy.
 - **Frontend** (Vercel, Netlify, Cloudflare Pages o `frontend/Dockerfile` con nginx): define `VITE_API_URL` **en el build** y el fallback de SPA a `index.html`.
 
 Para probar todo en contenedores:
@@ -139,7 +130,7 @@ FRONTEND_PORT=3000 docker compose up -d --build   # si el 8080 está ocupado
 ## Escalabilidad: qué está preparado y siguientes pasos
 
 - **API versionada** (`/api/v1`): puedes sacar una `v2` sin romper clientes.
-- **Módulos por dominio**: para añadir blog, experiencia o un formulario de contacto, crea `src/modules/<nombre>/` y móntalo en `routes.ts`. En el frontend, `src/features/<nombre>/`. Un blog puede reutilizar el mismo patrón de carpeta Markdown + sync.
-- **Storage desacoplado**: la BD guarda la *key* de cada imagen, no la URL. Antes de levantar varias instancias del backend, implementa un `StorageProvider` para S3 / Cloudflare R2 en `src/lib/storage/` y ejecuta el sync como paso de release (no en cada instancia).
-- **Paginación, filtros e índices** en las consultas de proyectos.
-- Siguientes pasos: tests (Vitest + Supertest), CI, redimensionar imágenes con `sharp` durante el sync, búsqueda que ignore acentos (`unaccent`), SEO con prerender/SSR.
+- **Módulos por dominio**: para añadir blog, experiencia o un formulario de contacto, crea `src/modules/<nombre>/` y móntalo en `routes.ts`. En el frontend, `src/features/<nombre>/`. Un blog puede reutilizar el mismo patrón de carpeta Markdown leída al arrancar.
+- **Sin estado**: todo el contenido va dentro de la imagen, así que se pueden levantar varias instancias del backend sin coordinar nada. Las imágenes llevan el hash en la URL y se cachean para siempre; si pesan, basta poner un CDN delante.
+- **Paginación y filtros** en las consultas de proyectos. Se resuelven en memoria, suficiente para cientos de proyectos.
+- Siguientes pasos: tests (Vitest + Supertest), CI, redimensionar imágenes con `sharp` al cargar, búsqueda que ignore acentos, SEO con prerender/SSR.

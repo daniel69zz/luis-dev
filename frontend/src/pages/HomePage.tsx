@@ -1,5 +1,6 @@
 import { site } from '@/config/site';
 import { About } from './home/About';
+import { Certifications } from './home/Certifications';
 import { Contact } from './home/Contact';
 import { FeaturedProjects } from './home/FeaturedProjects';
 import { Hero } from './home/Hero';
@@ -13,6 +14,7 @@ export function HomePage() {
       <About />
       <FeaturedProjects />
       <Stack />
+      <Certifications />
       <Contact />
     </>
   );

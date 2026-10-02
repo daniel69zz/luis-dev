@@ -7,6 +7,7 @@ const links = [
   { to: '/#sobre-mi', label: 'sobre-mí' },
   { to: '/proyectos', label: 'proyectos' },
   { to: '/#stack', label: 'stack' },
+  { to: '/#certificaciones', label: 'certificaciones' },
   { to: '/#contacto', label: 'contacto' },
 ];
 
