@@ -1,0 +1,8 @@
+# docker compose up -d --build
+# FRONTEND_PORT=3000 docker compose up -d --build   (si el 9090 está ocupado)
+services:
+  frontend:
+    build: .
+    restart: unless-stopped
+    ports:
+      - '${FRONTEND_PORT:-9090}:80'
